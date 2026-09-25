@@ -6,6 +6,7 @@ class Text_file:
         pass
 
 
+# set up the frames
 root = tk.Tk()
 root.geometry("600x400")
 root.title("Colter's IDE")
@@ -22,5 +23,10 @@ tk.Button(title_frame, text="File").pack(side="left")
 
 tk.Button(text_frame, text="text here").pack()
 
+text_area = tk.Text(text_frame)
+text_area.pack(expand=1, fill="both")
 
+# write text to the text area
+text = "This is a trial text"
+text_area.insert(tk.END, text)
 root.mainloop()

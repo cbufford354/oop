@@ -11,7 +11,6 @@ class Text_editor:
         self.root = root
         self.root.geometry("600x400")
         self.root.title("Colter's IDE")
-        self.set_bindings()
         self.root.protocol("WM_DELETE_WINDOW", self.exit_ide)
 
         self.title_frame = tk.Frame(bg="lightblue")
@@ -63,6 +62,8 @@ class Text_editor:
         self.help_.add_separator()
         self.help_.add_command(label="About Tk", command=None)
 
+        self.set_bindings()
+
         # display Menu
         self.root.config(menu=self.menubar)
 
@@ -72,15 +73,21 @@ class Text_editor:
             defaultextension=".txt",
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
         )
-        if file_path:
-            try:
-                with open(file_path, "w") as file:
-                    file.write(self.text_area.get(1.0, tk.END))
-                messagebox.showinfo("Saved", "File saved successfully!")
-            except Exception as e:
-                messagebox.showerror("Error", f"Could not save file: {e}")
+        if not file_path:
+            return False
+        try:
+            with open(file_path, "w") as file:
+                file.write(self.text_area.get(1.0, tk.END))
+            messagebox.showinfo("Saved", "File saved successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not save file: {e}")
+            return False
+        self.text_area.edit_modified(False)  # resetting as it is now saved
+        return True
 
     def open_file(self, event=None):
+        if not self.on_modified():
+            return
         file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
         if file_path:
             try:
@@ -89,24 +96,23 @@ class Text_editor:
                     self.text_area.insert(tk.END, file.read())  # Insert file content
             except Exception as e:
                 messagebox.showerror("can't open file smh")
+            self.text_area.delete("1.0", tk.END)
+            self.text_area.insert("1.0", content)
+            self.text_area.edit_modified(False)  # reset this flag
 
     def new_file(self, event=None):
-        # maybe implement save file before making new file later !!
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt",
-            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
-        )
-        if file_path:
-            try:
-                with open(file_path, "w") as file:
-                    pass  # create new file
-            except Exception as e:
-                messagebox.showerror("couldn't create new file")
+
+        if not self.on_modified():
+            return
+        self.text_area.delete("1.0", tk.END)
+        self.text_area.edit_modified(False)
 
     # make label where whichever file is open is on text_are!!!!
 
     def exit_ide(self, event=None):
-        self.root.destroy()
+        "close app but prompt for saving first"
+        if self.on_modified():
+            self.root.destroy()
 
     # keyboard bindings
     def set_bindings(self):
@@ -114,6 +120,19 @@ class Text_editor:
         self.root.bind("<Control-s>", self.save_file)
         self.root.bind("<Control-n>", self.new_file)
         self.root.bind("<Control-o>", self.open_file)
+        self.text_area.bind("<<Modified>>", self.on_modified)
+
+    def on_modified(self, event):
+        """for events that update a file or create some change, this should
+        prompt the user to save their changes"""
+        if not self.text_area.edit_modified():
+            return True  # no changes made
+        question = messagebox.askyesnocancel("dont save her, she dont wanna be saved")
+        if question is None:
+            return False  # cancel
+        if question:
+            return self.save_file()
+        return True  # discard changes
 
 
 if __name__ == "__main__":

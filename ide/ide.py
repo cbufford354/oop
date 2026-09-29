@@ -6,14 +6,15 @@ from tkinter import filedialog, messagebox
 
 
 class Text_editor:
-    def __init__(self):
+    def __init__(self, root):
         # set up the frames
         self.root = root
         self.root.geometry("600x400")
         self.root.title("Colter's IDE")
+        self.set_up_bindings()
 
         self.title_frame = tk.Frame(bg="lightblue")
-        title_frame.pack(side="top", fill="x")
+        self.title_frame.pack(side="top", fill="x")
 
         self.text_frame = tk.Frame(bg="red")
         self.text_frame.pack(side="top", fill="both", expand=True)
@@ -25,7 +26,7 @@ class Text_editor:
 
         # write text to the text area
         self.text_area = tk.Text(self.text_frame)
-        text_area.pack(expand=1, fill="both")
+        self.text_area.pack(expand=1, fill="both")
 
         text = "This is a trial text"
         self.text_area.insert(tk.END, text)
@@ -35,20 +36,16 @@ class Text_editor:
 
         # Adding File Menu and commands
         self.file = Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(
-            label="File", menu=file
-        )  # adding file menue to menubar under root
-        self.file.add_command(label="New File", command=None)
-        self.file.add_command(label="Open...", command=None)
-        self.file.add_command(
-            label="Save", command=save_file
-        )  # dont include parenthesis or it will auto run
+        self.menubar.add_cascade(label="File", menu=self.file)
+        self.file.add_command(label="New File", command=self.new_file)
+        self.file.add_command(label="Open...", command=self.open_file)
+        self.file.add_command(label="Save", command=self.save_file)
         self.file.add_separator()
-        self.file.add_command(label="Exit", command=root.destroy)
+        self.file.add_command(label="Exit", command=self.exit_ide)
 
         # Adding Edit Menu and commands
         self.edit = Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="Edit", menu=edit)
+        self.menubar.add_cascade(label="Edit", menu=self.edit)
         self.edit.add_command(label="Cut", command=None)
         self.edit.add_command(label="Copy", command=None)
         self.edit.add_command(label="Paste", command=None)
@@ -59,31 +56,51 @@ class Text_editor:
 
         # Adding Help Menu
         self.help_ = Menu(self.menubar, tearoff=0)
-        menubar.add_cascade(label="Help", menu=help_)
+        self.menubar.add_cascade(label="Help", menu=self.help_)
         self.help_.add_command(label="Tk Help", command=None)
         self.help_.add_command(label="Demo", command=None)
         self.help_.add_separator()
         self.help_.add_command(label="About Tk", command=None)
 
         # display Menu
-        self.root.config(menu=menubar)
+        self.root.config(menu=self.menubar)
 
-        # commands
-        def save_file():
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".txt",
-                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
-            )
-            if file_path:
-                try:
-                    with open(file_path, "w") as file:
-                        file.write(text_area.get(1.0, tk.END))
-                    messagebox.showinfo("Saved", "File saved successfully!")
-                except Exception as e:
-                    messagebox.showerror("Error", f"Could not save file: {e}")
+    # commands
+    def save_file(self, event=None):
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+        )
+        if file_path:
+            try:
+                with open(file_path, "w") as file:
+                    file.write(self.text_area.get(1.0, tk.END))
+                messagebox.showinfo("Saved", "File saved successfully!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not save file: {e}")
+
+    def open_file(self, event=None):
+        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+        if file_path:
+            with open(file_path, "r") as file:
+                self.text_area.delete("1.0", tk.END)  # Clear the Text widget
+                self.text_area.insert(tk.END, file.read())  # Insert file content
+
+    def new_file(self, event=None):
+        self.text_area.delete("1.0", tk.END)  # deletes all current text on screen
+
+    def exit_ide(self, event=None):
+        self.root.destroy()
+
+    # keyboard bindings
+    def set_up_bindings(self):
+        self.root.bind("<Control-q>", self.exit_ide)
+        self.root.bind("<Control-s>", self.save_file)
+        self.root.bind("<Control-n>", self.new_file)
+        self.root.bind("<Control-o>", self.open_file)
 
 
 if __name__ == "__main__":
-    root.mainloop()
     root = tk.Tk()
     ide = Text_editor(root)
+    root.mainloop()

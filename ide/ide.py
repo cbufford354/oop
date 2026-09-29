@@ -12,6 +12,7 @@ class Text_editor:
         self.root.geometry("600x400")
         self.root.title("Colter's IDE")
         self.set_bindings()
+        self.root.protocol("WM_DELETE_WINDOW", self.exit_ide)
 
         self.title_frame = tk.Frame(bg="lightblue")
         self.title_frame.pack(side="top", fill="x")

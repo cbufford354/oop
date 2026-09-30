@@ -1,6 +1,7 @@
 # Colter Bufford IDE #
 - run through tkinter package on python 3.13
 -   python ide.py
+- https://github.com/cbufford354/oop/tree/main
 
 ## shortcuts ##
 - ctrl N => new file

@@ -28,9 +28,6 @@ class Text_editor:
         self.text_area = tk.Text(self.text_frame)
         self.text_area.pack(expand=1, fill="both")
 
-        text = "This is a trial text"
-        self.text_area.insert(tk.END, text)
-
         # create menu bar
         self.menubar = Menu(self.root)
 
@@ -105,14 +102,15 @@ class Text_editor:
         if not self.on_modified():
             return
         self.text_area.delete("1.0", tk.END)
-        self.text_area.edit_modified(False)
+        self.text_area.edit_modified(False)  # reset to know that the file is unmodified
 
     # make label where whichever file is open is on text_are!!!!
 
     def exit_ide(self, event=None):
         "close app but prompt for saving first"
-        if self.on_modified():
+        if self.on_modified():  # True when needs saving
             self.root.destroy()
+        # no need to reset since we are closing IDE
 
     # keyboard bindings
     def set_bindings(self):
@@ -122,12 +120,18 @@ class Text_editor:
         self.root.bind("<Control-o>", self.open_file)
         self.text_area.bind("<<Modified>>", self.on_modified)
 
-    def on_modified(self, event):
+    def on_modified(self, event=None):
         """for events that update a file or create some change, this should
         prompt the user to save their changes"""
         if not self.text_area.edit_modified():
             return True  # no changes made
-        question = messagebox.askyesnocancel("dont save her, she dont wanna be saved")
+        question = messagebox.askyesnocancel(
+            title="Save File",
+            message="File is unsaved",
+            detail="If you dont save your changes will be lost!",
+            icon="warning",
+            default="cancel",
+        )
         if question is None:
             return False  # cancel
         if question:

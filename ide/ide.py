@@ -83,8 +83,7 @@ class Text_editor:
         return True
 
     def open_file(self, event=None):
-        if not self.on_modified():
-            return
+        self.prompt_save_changes()
         file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
         if file_path:
             try:
@@ -98,9 +97,7 @@ class Text_editor:
             self.text_area.edit_modified(False)  # reset this flag
 
     def new_file(self, event=None):
-
-        if not self.on_modified():
-            return
+        self.prompt_save_changes()
         self.text_area.delete("1.0", tk.END)
         self.text_area.edit_modified(False)  # reset to know that the file is unmodified
 
@@ -108,8 +105,8 @@ class Text_editor:
 
     def exit_ide(self, event=None):
         "close app but prompt for saving first"
-        if self.on_modified():  # True when needs saving
-            self.root.destroy()
+        self.prompt_save_changes()
+        self.root.destroy()
         # no need to reset since we are closing IDE
 
     # keyboard bindings
@@ -118,7 +115,8 @@ class Text_editor:
         self.root.bind("<Control-s>", self.save_file)
         self.root.bind("<Control-n>", self.new_file)
         self.root.bind("<Control-o>", self.open_file)
-        self.text_area.bind("<<Modified>>", self.on_modified)
+
+    # self.text_area.bind("<<Modified>>", self.prompt_save_changes)
 
     def on_modified(self, event=None):
         """for events that update a file or create some change, this should
@@ -137,6 +135,28 @@ class Text_editor:
         if question:
             return self.save_file()
         return True  # discard changes
+
+    def unsaved_changes(self, event=None):
+        """tracks if the file has been edited since the last save and returns
+        true if there are unsaved changes"""
+        return self.text_area.edit_modified()
+
+    def prompt_save_changes(self, event=None):
+        if self.unsaved_changes():
+            question = messagebox.askyesnocancel(
+                title="Save File",
+                message="File is unsaved",
+                detail="If you dont save your changes will be lost!",
+                icon="warning",
+                default="cancel",
+            )
+            if question is None:
+                return False  # cancel
+            if question:
+                return self.save_file()
+            return True  # discard changes
+        else:
+            return False
 
 
 if __name__ == "__main__":

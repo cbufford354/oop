@@ -1,0 +1,92 @@
+%% object diagram 
+classDiagram 
+	class explorer1["explorer1:Spacecraft"]{
+		name = "explorer1"
+		misionDuration = 100
+		currentStatus = "active"
+	}
+	class crewMember1["pilot1:CrewMember"]{
+		id = 110
+		name = "jack"
+		role = "Pilot"
+
+	}
+	class crewMember2["engineer1:CrewMember"]{
+		id = 111
+		name = "jackson"
+		role = "Engineer"
+	}
+	class science1["science1:ScienceModule"]{
+		moduleName = "Science Lab"
+		moduleType = "Scientific"
+	}
+	class habitat1["habitat1:HabitatModule"]{
+		moduleName = "Habitat"
+		moduleType = "Living Quarters"
+	}
+    class experiment1["experiment1:Experiment"]{
+        experimentId = 2000
+        experimentName = "Growing Crystal"
+        status = "active"
+    }
+    science1 -- experiment1 : hosts
+    explorer1 -- crewMember1 : has aboard
+    explorer1 -- crewMember2 : has aboard
+    explorer1 -- science1 : contains
+    explorer1 -- habitat1 : contains
+    crewMember2 -- experiment1 : performDuty("Growing Crystals")
+
+%% Class Diagram
+classDiagram
+direction TB
+    Spacecraft "1" o-- "1..*" CrewMember : contains
+    CrewMember "1" -- "1..*" Experiment : conducts
+    Spacecraft "1" *-- "1..*" Module : composed
+    Experiment "1" -- "1" Module : conducted_in
+	Module "1" <|-- "1" PropulsionModule
+	Module "1"<|--"1" HabitatModule
+	Module "1" <|--"1"ScienceModule
+    class Spacecraft {
+	    + name : String
+	    + missionDuration : Integer
+	    + currentStatus : string
+	    + launch() : Void
+	    + land() : Void
+	    + communicate() : Void
+    }
+
+    class CrewMember {
+	    + id : Integer
+	    + name : String
+	    + role : String
+	    + performDuty(experimentName : "String") : Void
+	    + reportStatus() : Void
+    }
+
+    class Module {
+	    + moduleName : String
+	    + moduleType : String
+	    + activateModule() : Void
+	    + deactivateModule() : Void
+    }
+
+    class Experiment {
+	    + experimentId : Integer
+	    + experimentName : String
+	    + status : String
+	    + starExperiment : Void
+	    + endExperiment : Void
+    }
+	class ScienceModule{
+		
+	}
+	class HabitatModule{
+		
+	}
+	class PropulsionModule{
+		
+	}
+	
+
+
+    

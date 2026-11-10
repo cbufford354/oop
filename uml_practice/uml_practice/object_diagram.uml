@@ -1,0 +1,36 @@
+classDiagram 
+	class explorer1["explorer1:Spacecraft"]{
+		name = "explorer1"
+		misionDuration = 100
+		currentStatus = "active"
+	}
+	class crewMember1["pilot1:CrewMember"]{
+		id = 110
+		name = "jack"
+		role = "Pilot"
+
+	}
+	class crewMember2["engineer1:CrewMember"]{
+		id = 111
+		name = "jackson"
+		role = "Engineer"
+	}
+	class science1["science1:ScienceModule"]{
+		moduleName = "Science Lab"
+		moduleType = "Scientific"
+	}
+	class habitat1["habitat1:HabitatModule"]{
+		moduleName = "Habitat"
+		moduleType = "Living Quarters"
+	}
+    class experiment1["experiment1:Experiment"]{
+        experimentId = 2000
+        experimentName = "Growing Crystal"
+        status = "active"
+    }
+    science1 -- experiment1 : hosts
+    explorer1 -- crewMember1 : has aboard
+    explorer1 -- crewMember2 : has aboard
+    explorer1 -- science1 : contains
+    explorer1 -- habitat1 : contains
+    crewMember2 -- experiment1 : performDuty("Growing Crystals")

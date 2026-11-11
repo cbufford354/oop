@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from documents import Document
+from documents import Document, TextDocumentCreator, MarkdownDocumentCreator
 
 
 class EditorView:
@@ -39,6 +40,9 @@ class EditorView:
         file_menu.add_command(label="Save", command=controller.save_file)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=controller.exit_ide)
+        file_menu.add_command(
+            label="Duplicat Document", command=controller.duplicate_document
+        )
 
         # Edit menu
         edit_menu = tk.Menu(menubar, tearoff=0)
@@ -73,7 +77,8 @@ class EditorController:
     def __init__(self, root, view):
         self.root = root
         self.view = view
-        self.document = Document()  # creating document object
+        self.document_creator = TextDocumentCreator()
+        self.document = self.document_creator.create_document()
 
         # Keyboard shortcuts
         self.root.bind("<Control-q>", self.exit_ide)
@@ -90,7 +95,11 @@ class EditorController:
         if file_path is None:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".txt",
-                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+                filetypes=[
+                    ("Text Files", "*.txt"),
+                    ("Markdown Files", "*.md"),
+                    ("All Files", "*.*"),
+                ],
             )
 
         if not file_path:
@@ -112,6 +121,11 @@ class EditorController:
             messagebox.showerror("Error", f"Could not save file: {error}")
             return False
 
+    def duplicate_document(self):
+        self.document = self.document.clone()
+        self.view.text_area.delete("1.0", "end")
+        self.view.text_area.insert("1.0", self.document.content)
+
     def open_file(self, event=None):
         if not self.prompt_save_changes():
             return
@@ -125,7 +139,8 @@ class EditorController:
 
         try:
             # Read file using Document
-            self.document = Document()
+            self.document_creator = self.get_document_creator(file_path)
+            self.document = self.document_creator.create_document()
             self.document.load(file_path)
 
             # Display document contents in GUI
@@ -173,11 +188,29 @@ class EditorController:
         if self.prompt_save_changes():
             self.root.destroy()
 
+    def get_document_creator(self, file_path):
+        if file_path.endswith(".md"):
+            return MarkdownDocumentCreator()
+        return TextDocumentCreator()
+
 
 class TextEditor:
     """Coordinates the editor components and starts the application."""
 
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        """controls the creation of a new object"""
+        if cls._instance is None:  # check if instance already exists
+            cls._instance = super().__new__(cls)  # creates if doesnt exist
+
+        return cls._instance
+
     def __init__(self, root):
+        if hasattr(self, "initialized"):
+            return
+
+        self.initialized = True
         self.root = root
 
         self.view = EditorView(root)
